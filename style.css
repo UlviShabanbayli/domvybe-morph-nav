@@ -1,0 +1,419 @@
+/* Morph nav — a liquid mega-navigation in black and white. A floating capsule flows down into ONE panel that
+   reshapes between the sections, a lens follows the pointer across the menu and the links, and the whole nav
+   re-flows by its container's width: desktop capsule → tablet capsule → mobile burger + sheet.
+   Three looks (?look=glass|metal|island): smoked liquid glass, liquid metal, a solid black island.
+
+   1 tokens: primitive → semantic (per look) → component     2 stage, frame, ambient     3 the frame's words
+   4 the demo window and its handle     5 the demo site and its light     6 the nav: a floating capsule     7 the drop
+   8 the lenses     9 layout · desktop (full)     10 layout · tablet (bar)     11 layout · mobile (compact)
+   12 the impact     13 the frame's footer     14 the looks' own touches     15 ?full=1, ?wide=1     16 reduced motion
+
+   ---- 1. TOKENS -------------------------------------------------------------------------------------------------
+   1a PRIMITIVES (:root): neutral ramps only — night (--n), chrome (--ch), iOS greys (--io) and paper (--pl).
+      Colour is light and material, never hue.
+   1b SEMANTIC TOKENS (per look, on [data-look]): what a value is FOR.
+        field   --page --field-bg --on-field --on-field-muted --chip --on-chip --em --avatar-ring --lockup
+        window  --win --win-edge --win-shadow --on-win --win-dot
+        site    --site --on-site --on-site-muted --on-site-soft --site-line --site-card --site-dots --site-btn --on-site-btn --light --beam --vscrim
+        drop    --glass --glass-filter --glass-rim --glass-drop --pane-r --spot --rim --sheen
+        lens    --lens-bg --lens-filter --lens-rim --on-lens --on-lens-muted
+        nav     --on-bar --on-bar-muted --focus --cta --on-cta --cta-glow --burger
+        pane    --on-pane --on-pane-muted --pane-head --pane-rule --ico --ico-edge --on-ico --feat --on-feat --on-feat-muted
+                --chart --code --on-code --on-code-muted --badge --on-badge --foot-fade --foot-sign --grip
+        word    --word --word-glow        impact  --bloom --ripple
+        frame   --pill --pill-edge --on-pill --on-pill-muted --pill-icon --on-pill-icon
+   1c COMPONENT TOKENS: each component names the semantic tokens it uses (.mn { --mn-… }). */
+
+:root {
+  --n-1000: #000; --n-975: #050506; --n-950: #08080A; --n-900: #0E0E11; --n-850: #151519; --n-800: #1D1D22;
+  --n-700: #2B2B31; --n-500: #6E6E78; --n-400: #A0A0A9; --n-300: #C6C6CD; --n-200: #E3E3E8; --n-100: #F2F2F4; --n-0: #fff;
+  --w-4: rgb(255 255 255 / .04); --w-6: rgb(255 255 255 / .06); --w-9: rgb(255 255 255 / .09); --w-12: rgb(255 255 255 / .12);
+  --w-18: rgb(255 255 255 / .18); --w-28: rgb(255 255 255 / .28); --w-40: rgb(255 255 255 / .4); --w-70: rgb(255 255 255 / .7);
+  --b-6: rgb(0 0 0 / .06); --b-12: rgb(0 0 0 / .12); --b-25: rgb(0 0 0 / .25); --b-40: rgb(0 0 0 / .4); --b-70: rgb(0 0 0 / .7);
+  --ch-50: #FBFBFC; --ch-100: #EEEFF2; --ch-200: #DCDDE2; --ch-300: #C6C8CE; --ch-400: #A4A7AF; --ch-500: #80838B;
+  --ch-600: #5E6168; --ch-700: #3E4046; --ch-800: #26272B;
+  --io-850: #1C1C1E; --io-800: #2C2C2E; --io-700: #3A3A3C; --io-500: #8E8E93; --io-400: #AEAEB2;
+  --pl-50: #FAFAFA; --pl-100: #F2F2F4; --pl-200: #E5E5EA; --pl-300: #D1D1D6; --pl-700: #55555C;
+
+  --sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+}
+
+/* 1b · semantic tokens, per look */
+/* A · GLASS: smoked liquid glass at night. A clear lens with a bright rim, white type, white light behind */
+[data-look="glass"] {
+  --page: var(--n-975);
+  --field-bg: radial-gradient(ellipse 70% 42% at 50% 60%, var(--n-850) 0%, var(--n-950) 62%, var(--n-975) 100%);
+  --on-field: var(--n-0); --on-field-muted: var(--n-400); --chip: var(--n-0); --on-chip: var(--n-1000); --em: var(--n-300); --avatar-ring: var(--n-300); --lockup: none;
+  --win: var(--w-6); --win-edge: var(--w-12); --win-shadow: 0 50px 90px -30px var(--n-1000); --on-win: var(--n-400); --win-dot: var(--w-18);
+  --site: var(--n-950); --on-site: var(--n-0); --on-site-muted: var(--n-400); --on-site-soft: var(--n-300); --site-line: var(--w-12); --site-card: var(--w-4); --site-dots: var(--w-9); --site-btn: var(--n-0); --on-site-btn: var(--n-1000);
+  --light: rgb(255 255 255 / .16); --beam: rgb(255 255 255 / .07); --vscrim: rgb(0 0 0 / .5);
+  --glass: linear-gradient(180deg, var(--w-9), var(--w-4) 60%), rgb(14 14 17 / .56); --glass-filter: blur(28px) saturate(1.5) brightness(1.08);
+  --glass-rim: inset 0 1px 0 var(--w-40), inset 0 -1px 0 var(--w-6), inset 0 0 0 1px var(--w-12), inset 0 0 30px var(--w-4);
+  --glass-drop: 0 40px 80px -28px var(--n-1000), 0 12px 24px -16px var(--b-70);
+  --pane-r: 28px; --spot: var(--w-9); --rim: var(--w-70); --sheen: var(--w-12);
+  --lens-bg: radial-gradient(closest-side, transparent 56%, var(--w-6) 80%, var(--w-18) 100%), linear-gradient(180deg, var(--w-12), transparent 50%);
+  --lens-filter: brightness(1.3) saturate(1.2);
+  --lens-rim: inset 0 0 0 1px var(--w-28), inset 0 1.5px 3px var(--w-40), inset 0 -2px 6px var(--w-6), 0 10px 22px -12px var(--n-1000);
+  --on-lens: var(--n-0); --on-lens-muted: var(--n-300);
+  --on-bar: var(--n-0); --on-bar-muted: var(--n-400); --focus: var(--n-0);
+  --cta: var(--n-0); --on-cta: var(--n-1000); --cta-glow: 0 6px 20px -8px var(--w-40); --burger: var(--w-6);
+  --on-pane: var(--n-0); --on-pane-muted: var(--n-400); --pane-head: var(--n-400); --pane-rule: var(--w-9);
+  --ico: linear-gradient(180deg, var(--w-12), var(--w-4)); --ico-edge: var(--w-12); --on-ico: var(--n-0);
+  --feat: linear-gradient(160deg, var(--n-0), var(--n-200)); --on-feat: var(--n-1000); --on-feat-muted: var(--n-700); --chart: linear-gradient(180deg, var(--n-1000), var(--n-700));
+  --code: rgb(0 0 0 / .45); --on-code: var(--n-100); --on-code-muted: var(--n-400);
+  --badge: var(--n-0); --on-badge: var(--n-1000);
+  --foot-fade: rgb(14 14 17 / .9); --foot-sign: var(--n-850); --grip: var(--w-28);
+  --word: var(--n-0); --word-glow: var(--w-18);
+  --bloom: var(--w-40); --ripple: var(--w-70);
+  --pill: var(--w-6); --pill-edge: var(--w-12); --on-pill: var(--n-0); --on-pill-muted: var(--n-400); --pill-icon: var(--n-0); --on-pill-icon: var(--n-1000);
+}
+/* B · METAL: liquid metal. A brushed chrome capsule that pours like mercury, a black mirror lens, black type */
+[data-look="metal"] {
+  --page: var(--n-975);
+  --field-bg: radial-gradient(ellipse 75% 45% at 50% 58%, var(--n-800) 0%, var(--n-950) 62%, var(--n-975) 100%);
+  --on-field: var(--n-0); --on-field-muted: var(--ch-400); --chip: var(--ch-100); --on-chip: var(--n-1000); --em: var(--ch-300); --avatar-ring: var(--ch-300); --lockup: none;
+  --win: var(--w-6); --win-edge: var(--w-12); --win-shadow: 0 50px 90px -30px var(--n-1000); --on-win: var(--ch-400); --win-dot: var(--w-18);
+  --site: var(--n-950); --on-site: var(--n-0); --on-site-muted: var(--ch-400); --on-site-soft: var(--ch-300); --site-line: var(--w-12); --site-card: var(--w-4); --site-dots: var(--w-9); --site-btn: linear-gradient(180deg, var(--ch-50), var(--ch-300)); --on-site-btn: var(--n-1000);
+  --light: rgb(255 255 255 / .12); --beam: rgb(255 255 255 / .06); --vscrim: rgb(0 0 0 / .5);
+  --glass: repeating-linear-gradient(0deg, var(--w-12) 0 1px, transparent 1px 3px),
+           linear-gradient(180deg, var(--ch-50) 0, var(--ch-200) 20px, var(--ch-300) 32px, var(--ch-100) 50px, var(--ch-300) 58px, var(--ch-200) 60px, var(--ch-300) 100%);
+  --glass-filter: none;
+  --glass-rim: inset 0 1px 0 var(--n-0), inset 0 -1px 0 var(--b-40), inset 0 0 0 1px var(--b-25), inset 0 -12px 20px -12px var(--b-40);
+  --glass-drop: 0 34px 70px -26px var(--n-1000), 0 0 0 1px var(--b-70);
+  --pane-r: 29px; --spot: rgb(255 255 255 / .95); --rim: var(--n-0); --sheen: rgb(255 255 255 / .9);
+  --lens-bg: linear-gradient(180deg, var(--ch-700) 0%, var(--n-1000) 55%, var(--ch-800) 100%); --lens-filter: none;
+  --lens-rim: inset 0 1px 0 var(--w-40), inset 0 0 0 1px var(--b-70), 0 6px 14px -6px var(--b-70);
+  --on-lens: var(--n-0); --on-lens-muted: var(--ch-300);
+  --on-bar: var(--n-1000); --on-bar-muted: var(--ch-700); --focus: var(--n-1000);
+  --cta: var(--n-1000); --on-cta: var(--n-0); --cta-glow: 0 6px 16px -8px var(--b-70); --burger: linear-gradient(180deg, var(--ch-50), var(--ch-300));
+  --on-pane: var(--n-1000); --on-pane-muted: var(--ch-700); --pane-head: var(--ch-700); --pane-rule: var(--b-12);
+  --ico: linear-gradient(180deg, var(--ch-50), var(--ch-300)); --ico-edge: var(--b-25); --on-ico: var(--n-1000);
+  --feat: linear-gradient(160deg, var(--ch-700), var(--n-1000) 60%, var(--ch-800)); --on-feat: var(--n-0); --on-feat-muted: var(--ch-300); --chart: linear-gradient(180deg, var(--ch-50), var(--ch-500));
+  --code: var(--n-1000); --on-code: var(--ch-100); --on-code-muted: var(--ch-400);
+  --badge: var(--n-1000); --on-badge: var(--n-0);
+  --foot-fade: rgb(198 200 206 / .96); --foot-sign: var(--ch-100); --grip: var(--b-25);
+  --word: var(--ch-100); --word-glow: var(--w-12);
+  --bloom: rgb(255 255 255 / .5); --ripple: var(--ch-200);
+  --pill: var(--w-6); --pill-edge: var(--w-12); --on-pill: var(--n-0); --on-pill-muted: var(--ch-400); --pill-icon: var(--ch-100); --on-pill-icon: var(--n-1000);
+}
+/* C · ISLAND: a solid black island on a paper-white page. No glass: a grey pill for a lens, content that focuses in */
+[data-look="island"] {
+  --page: var(--pl-200);
+  --field-bg: radial-gradient(ellipse 80% 50% at 50% 55%, var(--pl-50) 0%, var(--pl-100) 55%, var(--pl-200) 100%);
+  --on-field: var(--n-1000); --on-field-muted: var(--pl-700); --chip: var(--n-1000); --on-chip: var(--n-0); --em: var(--pl-700); --avatar-ring: var(--n-1000); --lockup: brightness(0);
+  --win: rgb(255 255 255 / .7); --win-edge: var(--b-12); --win-shadow: 0 40px 70px -30px var(--b-40); --on-win: var(--pl-700); --win-dot: var(--b-25);
+  --site: var(--pl-50); --on-site: var(--n-1000); --on-site-muted: var(--pl-700); --on-site-soft: var(--pl-700); --site-line: var(--b-12); --site-card: var(--b-6); --site-dots: rgb(0 0 0 / .08); --site-btn: var(--n-1000); --on-site-btn: var(--n-0);
+  --light: rgb(255 255 255 / 0); --beam: rgb(0 0 0 / .025); --vscrim: rgb(0 0 0 / .18);
+  --glass: linear-gradient(180deg, var(--io-850) 0, var(--n-1000) 26px), var(--n-1000); --glass-filter: none;
+  --glass-rim: inset 0 1px 0 rgb(255 255 255 / .16), inset 0 0 0 1px var(--w-6);
+  --glass-drop: 0 26px 50px -18px var(--b-40), 0 8px 16px -8px var(--b-25);
+  --pane-r: 30px; --spot: transparent; --rim: rgb(255 255 255 / .3); --sheen: var(--w-9);
+  --lens-bg: linear-gradient(180deg, var(--io-700), var(--io-800)); --lens-filter: none;
+  --lens-rim: inset 0 1px 0 var(--w-12), 0 4px 10px -4px var(--b-70);
+  --on-lens: var(--n-0); --on-lens-muted: var(--io-400);
+  --on-bar: var(--n-0); --on-bar-muted: var(--io-500); --focus: var(--n-0);
+  --cta: var(--n-0); --on-cta: var(--n-1000); --cta-glow: none; --burger: var(--io-800);
+  --on-pane: var(--n-0); --on-pane-muted: var(--io-500); --pane-head: var(--io-500); --pane-rule: var(--w-9);
+  --ico: var(--io-850); --ico-edge: var(--w-9); --on-ico: var(--n-0);
+  --feat: linear-gradient(160deg, var(--n-0), var(--pl-200)); --on-feat: var(--n-1000); --on-feat-muted: var(--pl-700); --chart: linear-gradient(180deg, var(--n-1000), var(--io-700));
+  --code: var(--io-850); --on-code: var(--pl-100); --on-code-muted: var(--io-400);
+  --badge: var(--n-0); --on-badge: var(--n-1000);
+  --foot-fade: rgb(0 0 0 / .94); --foot-sign: var(--io-850); --grip: var(--w-28);
+  --word: var(--n-1000); --word-glow: transparent;
+  --bloom: rgb(0 0 0 / 0); --ripple: var(--b-40);
+  --pill: var(--n-1000); --pill-edge: var(--n-1000); --on-pill: var(--n-0); --on-pill-muted: var(--io-400); --pill-icon: var(--n-0); --on-pill-icon: var(--n-1000);
+}
+
+/* 1c · component tokens: each component names what it uses */
+.title    { --title-ink: var(--on-field); --title-muted: var(--on-field-muted); --title-em: var(--em); --title-chip: var(--chip); --title-on-chip: var(--on-chip); }
+.device   { --dv-bg: var(--win); --dv-edge: var(--win-edge); --dv-shadow: var(--win-shadow); --dv-ink: var(--on-win); --dv-dot: var(--win-dot); }
+.site     { --st-ink: var(--on-site); --st-muted: var(--on-site-muted); --st-soft: var(--on-site-soft); --st-line: var(--site-line); --st-card: var(--site-card); --st-btn: var(--site-btn); --st-on-btn: var(--on-site-btn); }
+.mn       { --mn-ink: var(--on-bar); --mn-muted: var(--on-bar-muted); --mn-focus: var(--focus); --mn-lit: var(--on-lens); --mn-lit-dim: var(--on-lens-muted);
+            --mn-cta: var(--cta); --mn-on-cta: var(--on-cta); --mn-cta-glow: var(--cta-glow); --mn-burger: var(--burger);
+            --pn-bg: var(--glass); --pn-filter: var(--glass-filter); --pn-rim: var(--glass-rim); --pn-drop: var(--glass-drop); --pn-spot: var(--spot); --pn-light: var(--rim); --pn-sheen: var(--sheen);
+            --pn-ink: var(--on-pane); --pn-dim: var(--on-pane-muted); --pn-h: var(--pane-head); --pn-hr: var(--pane-rule);
+            --pn-ico: var(--ico); --pn-ico-edge: var(--ico-edge); --pn-on-ico: var(--on-ico);
+            --pn-feat: var(--feat); --pn-on-feat: var(--on-feat); --pn-on-feat-dim: var(--on-feat-muted); --pn-chart: var(--chart);
+            --pn-code: var(--code); --pn-on-code: var(--on-code); --pn-on-code-dim: var(--on-code-muted);
+            --pn-badge: var(--badge); --pn-on-badge: var(--on-badge); --pn-foot-fade: var(--foot-fade); --pn-foot-sign: var(--foot-sign); --pn-grip: var(--grip); }
+.word     { --wd-ink: var(--word); --wd-glow: var(--word-glow); }
+.fx       { --fx-bloom: var(--bloom); --fx-ring: var(--ripple); }
+.tutorial { --pill-bg: var(--pill); --pill-line: var(--pill-edge); --pill-ink: var(--on-pill); --pill-dim: var(--on-pill-muted); --pill-ic: var(--pill-icon); --pill-on-ic: var(--on-pill-icon); }
+.credits  { --credit-ink: var(--on-field); --credit-muted: var(--on-field-muted); }
+
+/* ---- 2. the stage, the frame, ambient ---- */
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: var(--sans); background: var(--page); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; overflow: hidden; }
+button { font: inherit; color: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.stage { position: relative; height: 100dvh; display: grid; place-items: center; overflow: hidden; background: var(--field-bg), var(--page); color: var(--on-field); }
+.frame { position: relative; width: 432px; height: 768px; flex: none; transform: scale(calc(var(--k, 1) * var(--bump, 1))); -webkit-user-select: none; user-select: none; }
+/* the light in the room: soft white glows that drift on the studio clock (app.js) */
+.amb { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.glow { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, var(--light), transparent); }
+.glow.g1 { left: -160px; top: 330px; width: 460px; height: 460px; }
+.glow.g2 { left: 200px; top: 200px; width: 400px; height: 400px; opacity: .7; }
+.glow.g3 { left: 30px; top: 580px; width: 420px; height: 320px; opacity: .6; }
+
+/* ---- 3. the frame's words ---- */
+.title { position: absolute; top: 30px; left: 0; right: 0; text-align: center; z-index: 3; color: var(--title-ink); }
+.series { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 -4px; font-size: 11px; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; color: var(--title-muted); }
+.series b { display: inline-grid; place-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-size: 11px; letter-spacing: .04em; color: var(--title-on-chip); background: var(--title-chip); }
+.title h1 { margin: 0; height: 72px; font-size: 44px; font-weight: 700; line-height: 72px; letter-spacing: -.05em; white-space: nowrap; }
+.title h1 em { font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 1.14em; line-height: 50px; letter-spacing: -.02em; padding: 0 .1em; color: var(--title-em); }
+.hint { margin: -7px 0 0; height: 20px; line-height: 20px; font-size: 14px; font-weight: 500; color: var(--title-muted); }
+
+/* the giant word (app.js rolls it, blurred in transit) */
+.word { position: absolute; left: 0; right: 0; top: 126px; height: 108px; margin: 0; text-align: center; pointer-events: none; z-index: 2; }
+.w { position: absolute; left: 0; right: 0; top: 0; height: 108px; display: block; text-align: center; font-family: var(--serif); font-style: italic; font-size: 84px; line-height: 108px; letter-spacing: -.02em; white-space: nowrap; color: var(--wd-ink); text-shadow: 0 0 44px var(--wd-glow); transform-origin: 50% 55%; }
+
+/* ---- 4. the demo window, the breakpoint read-out, the handle ---- */
+.bp { position: absolute; left: 0; right: 0; top: 234px; height: 24px; display: flex; justify-content: center; align-items: center; gap: 4px; z-index: 2; }
+.bp-seg { height: 24px; padding: 0 11px; display: inline-grid; place-items: center; border-radius: 999px; font-size: 11.5px; font-weight: 600; letter-spacing: .02em; color: var(--on-field-muted); background: var(--win); box-shadow: inset 0 0 0 1px var(--win-edge); transition: background-color .3s, color .3s; }
+.bp-seg.is-on { background: var(--chip); color: var(--on-chip); }
+.bp-w { margin-left: 6px; min-width: 62px; height: 24px; display: inline-flex; align-items: center; justify-content: center; gap: 3px; white-space: nowrap; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--on-field); }
+
+.device { position: absolute; left: 16px; top: 268px; width: 400px; height: 370px; z-index: 2; }
+.chrome { position: absolute; left: 0; right: 0; top: 0; height: 22px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border-radius: 14px 14px 0 0; background: var(--dv-bg); box-shadow: inset 0 0 0 1px var(--dv-edge), inset 0 1px 0 var(--w-18); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.chrome i { width: 7px; height: 7px; border-radius: 50%; background: var(--dv-dot); }
+.chrome .url { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10.5px; font-weight: 600; letter-spacing: .02em; color: var(--dv-ink); white-space: nowrap; }
+.vp-clip { position: absolute; left: 0; right: 0; top: 22px; bottom: 0; overflow: hidden; border-radius: 0 0 14px 14px; background: var(--site); box-shadow: var(--dv-shadow); }
+.vp-clip::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--dv-edge); pointer-events: none; z-index: 30; }
+.vp { position: absolute; left: 0; top: 0; width: 880px; height: 800px; transform-origin: 0 0; container: site / inline-size; color: var(--st-ink); overflow: hidden;
+  background: radial-gradient(circle at 1px 1px, var(--site-dots) 1px, transparent 1.4px) 0 0 / 22px 22px, var(--site); }
+.handle { position: absolute; top: 50%; right: -16px; width: 16px; height: 64px; margin-top: -32px; padding: 0; border: 0; border-radius: 0 10px 10px 0; cursor: ew-resize; touch-action: none;
+  background: var(--dv-bg); box-shadow: inset 0 0 0 1px var(--dv-edge), inset 0 1px 0 var(--w-18); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.handle i { position: absolute; left: 5px; top: 22px; width: 6px; height: 20px; border-left: 2px solid var(--on-field); border-right: 2px solid var(--on-field); opacity: .85; }
+.handle:focus-visible { outline: 2px solid var(--on-field); outline-offset: 2px; }
+
+/* ---- 5. the demo site and its light ---- */
+/* the light the glass bends: a beam from above and three soft glows that lean towards the open section (app.js) */
+.lights { position: absolute; inset: 0; pointer-events: none; }
+.lights::before { content: ''; position: absolute; left: 50%; top: -10%; width: 70%; height: 120%; transform: translateX(-50%); background: conic-gradient(from 160deg at 50% 0%, transparent, var(--beam) 20deg, transparent 40deg); }
+.lights i { position: absolute; top: 0; left: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--light) 0%, color-mix(in srgb, var(--light) 40%, transparent) 50%, transparent 100%); }
+.lights .l1 { width: 640px; height: 520px; margin: -260px 0 0 -320px; }
+.lights .l2 { width: 520px; height: 460px; margin: -230px 0 0 -260px; opacity: .8; }
+.lights .l3 { width: 480px; height: 420px; margin: -210px 0 0 -240px; opacity: .6; }
+.site { position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 128px 6cqi 0; }
+.site .kick { display: inline-block; margin: 0 0 14px; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--st-ink); background: var(--st-card); box-shadow: inset 0 0 0 1px var(--st-line); }
+.site h2 { margin: 0; max-width: 15ch; font-size: clamp(36px, 7.6cqi, 68px); line-height: 1.14; letter-spacing: -.04em; font-weight: 700; }
+.site h2 span { display: block; padding-bottom: .1em; font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; color: var(--st-soft); }
+.site .lede { margin: 16px 0 0; max-width: 38ch; font-size: 16px; line-height: 1.5; color: var(--st-muted); }
+.site .lede b { color: var(--st-ink); }
+.site .acts { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; }
+.btn { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 999px; font-size: 15px; font-weight: 600; text-decoration: none; color: var(--st-on-btn); background: var(--st-btn); }
+.btn.ghost { color: var(--st-ink); background: var(--st-card); box-shadow: inset 0 0 0 1px var(--st-line); }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 34px; }
+.cards i { height: 150px; border-radius: 20px; background: var(--st-card); box-shadow: inset 0 0 0 1px var(--st-line), inset 0 1px 0 var(--w-12); }
+@container site (max-width: 599px) { .cards { grid-template-columns: 1fr 1fr; } .cards i:nth-child(3) { display: none; } .site { padding-top: 100px; } }
+.vscrim { position: absolute; inset: 0; background: var(--vscrim); opacity: 0; pointer-events: none; z-index: 4; }
+
+/* ---- 6. the nav: a floating capsule ---- */
+.vp { --cap-h: 56px; }
+.mn { position: absolute; left: 0; right: 0; top: 0; z-index: 10; color: var(--mn-ink); --mode: compact; }
+.bar { display: flex; align-items: center; gap: 2px; height: var(--cap-h); margin: 10px 12px 0; padding: 0 6px 0 16px; }
+.brand { display: inline-flex; align-items: center; gap: 9px; height: 44px; padding-right: 10px; flex: none; text-decoration: none; color: var(--mn-ink); font-size: 18px; font-weight: 700; letter-spacing: -.03em; position: relative; z-index: 4; }
+.brand svg { width: 26px; height: 26px; fill: none; stroke: var(--mn-ink); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+.brand .b1 { fill: var(--w-18); }
+.nav { flex: 1; min-width: 0; }
+.tops { list-style: none; margin: 0; padding: 0; display: flex; }
+.tg {
+  position: relative; z-index: 4; display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 15px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--mn-muted); font-size: 15px; font-weight: 500; white-space: nowrap; cursor: pointer; transition: color .25s;
+}
+.tg[aria-expanded="true"] { color: var(--mn-ink); }
+.tg.is-lit { color: var(--mn-lit); }
+.tg .chev { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
+.tg[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.tg:focus-visible, .brand:focus-visible, .cta:focus-visible, .burger:focus-visible { outline: 2px solid var(--mn-focus); outline-offset: 2px; }
+.cta { flex: none; position: relative; z-index: 4; display: inline-flex; transition: opacity .25s; align-items: center; gap: 8px; height: 44px; padding: 0 18px; margin-left: 8px; border-radius: 999px; text-decoration: none; font-size: 14.5px; font-weight: 600; white-space: nowrap; color: var(--mn-on-cta); background: var(--mn-cta); box-shadow: inset 0 -2px 4px var(--b-12), var(--mn-cta-glow); }
+.cta svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.burger { display: none; flex: none; position: relative; z-index: 4; width: 44px; height: 44px; margin-left: 6px; padding: 0; border: 0; border-radius: 999px; background: var(--mn-burger); box-shadow: var(--lens-rim); cursor: pointer; }
+.burger i { position: absolute; left: 12px; top: 21px; width: 20px; height: 2px; border-radius: 2px; background: var(--mn-ink); }
+
+/* ---- 7. the glass: ONE drop. Closed it is the capsule behind the bar; open it flows down into the panel (or, on a
+        phone, swells into the sheet). Its four edges are springs (app.js). The sections are laid out at their own
+        size and clipped to it (clip-path). Inside: a spotlight and a rim light that follow the pointer (--mx, --my),
+        a hairline under the bar while it is open, and a sheen that sweeps across when the section changes. ---- */
+.glass { position: absolute; left: 0; top: 0; width: 10px; height: 10px; overflow: hidden; border-radius: var(--pane-r); z-index: 1; pointer-events: none;
+  background: var(--pn-bg); box-shadow: var(--pn-rim), var(--pn-drop); -webkit-backdrop-filter: var(--pn-filter); backdrop-filter: var(--pn-filter); }
+.glass i { position: absolute; pointer-events: none; }
+.g-spot { inset: 0; background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0), var(--pn-spot), transparent 70%); }
+.g-rim { inset: 0; border-radius: inherit; padding: 1px; background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0), var(--pn-light), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.g-sheen { top: -20%; bottom: -20%; left: 0; width: 46%; opacity: 0; background: linear-gradient(100deg, transparent 0%, var(--pn-sheen) 50%, transparent 100%); }
+.g-rule { left: 18px; right: 18px; top: var(--cap-h); height: 1px; opacity: 0; background: linear-gradient(90deg, transparent, var(--pn-hr) 15%, var(--pn-hr) 85%, transparent); }
+.sec { position: absolute; left: 0; top: 0; z-index: 10; visibility: hidden; color: var(--pn-ink); }
+.sec.is-on, .sec.is-out { visibility: visible; }
+.sec.is-out { pointer-events: none; }
+
+/* the section content: links, column heads, the featured card, tags, the code card */
+.sec-in { display: grid; gap: 6px 14px; padding: 12px 18px 18px; }
+.col { display: grid; align-content: start; gap: 2px; min-width: 0; }
+.col-h { margin: 0 0 4px; padding: 0 10px; height: 18px; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--pn-h); }
+.lk { position: relative; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 34px 8px 10px; border-radius: 16px; text-decoration: none; color: var(--pn-ink); }
+.lk::after { content: ''; position: absolute; right: 14px; top: 50%; width: 7px; height: 7px; margin-top: -4px; border: solid currentColor; border-width: 1.6px 1.6px 0 0; transform: translateX(-8px) rotate(45deg); opacity: 0; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1), opacity .25s; }
+.lk.is-lit::after { transform: translateX(0) rotate(45deg); opacity: 1; }
+.lk:focus-visible, .feat:focus-visible, .tag:focus-visible, .all:focus-visible, .code:focus-visible { outline: 2px solid var(--mn-focus); outline-offset: -2px; }
+.ico { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--pn-ico); box-shadow: inset 0 0 0 1px var(--pn-ico-edge), inset 0 1px 0 var(--w-28); color: var(--pn-on-ico); transition: transform .5s cubic-bezier(.3, 1.6, .5, 1); }
+.lk.is-lit .ico { transform: translateY(-1px) scale(1.08); }
+.ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lt { display: grid; gap: 2px; min-width: 0; }
+.lt b { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; line-height: 20px; white-space: nowrap; }
+.lt small { font-size: 13px; font-weight: 400; line-height: 17px; color: var(--pn-dim); white-space: nowrap; transition: color .25s; }
+.lk.is-lit { color: var(--mn-lit); }
+.lk.is-lit small { color: var(--mn-lit-dim); }
+.badge { display: inline-grid; place-items: center; height: 19px; padding: 0 7px; border-radius: 999px; font-size: 10.5px; font-style: normal; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--pn-on-badge); background: var(--pn-badge); }
+.feat { position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; padding: 16px; border-radius: 18px; overflow: hidden; text-decoration: none; color: var(--pn-on-feat); background: var(--pn-feat); box-shadow: inset 0 1px 0 var(--w-70), 0 14px 30px -16px var(--b-70); }
+.ft { display: grid; gap: 2px; }
+.ft em { font-style: normal; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--pn-on-feat-dim); }
+.ft b { font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+.ft small { font-size: 13px; font-weight: 500; color: var(--pn-on-feat-dim); }
+.art-chart { display: flex; align-items: flex-end; gap: 6px; height: 74px; }
+.art-chart i { flex: 1; height: var(--h); border-radius: 6px 6px 3px 3px; background: var(--pn-chart); transform-origin: 50% 100%; transition: transform .6s cubic-bezier(.3, 1.6, .5, 1); }
+.feat:hover .art-chart i { transform: scaleY(1.12); }
+.art-chart i:nth-child(1) { --h: 34%; } .art-chart i:nth-child(2) { --h: 58%; } .art-chart i:nth-child(3) { --h: 44%; }
+.art-chart i:nth-child(4) { --h: 76%; } .art-chart i:nth-child(5) { --h: 62%; } .art-chart i:nth-child(6) { --h: 100%; }
+.tag { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 10px; border-radius: 16px; text-decoration: none; font-size: 15px; font-weight: 600; color: var(--pn-ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pn-badge); }
+.dot.d2 { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pn-badge) 28%, transparent); }
+.dot.d3 { box-shadow: 0 0 0 3px color-mix(in srgb, var(--pn-badge) 28%, transparent), 0 0 0 6px color-mix(in srgb, var(--pn-badge) 12%, transparent); }
+.art-rings { position: relative; display: block; height: 62px; margin-top: 4px; }
+.art-rings i { position: absolute; top: 50%; left: 50%; border-radius: 50%; border: 1.5px solid var(--pn-hr); transform: translate(-50%, -50%); }
+.art-rings i:nth-child(1) { width: 24px; height: 24px; border: 0; background: var(--pn-badge); box-shadow: 0 0 22px var(--pn-light); }
+.art-rings i:nth-child(2) { width: 44px; height: 44px; } .art-rings i:nth-child(3) { width: 62px; height: 62px; }
+.code { display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; text-decoration: none; color: var(--pn-on-code); background: var(--pn-code); box-shadow: inset 0 0 0 1px var(--pn-hr); font-family: var(--mono); }
+.code-h { display: flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; font-size: 11px; font-weight: 500; color: var(--pn-on-code-dim); box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--pn-on-code) 12%, transparent); }
+.code-h i { width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--pn-on-code) 22%, transparent); }
+.code-h span { margin-left: 6px; }
+.code-b { display: grid; gap: 4px; padding: 12px 14px; font-size: 12.5px; line-height: 18px; white-space: nowrap; }
+.code-b u { text-decoration: none; color: var(--pn-on-code-dim); } .code-b s { text-decoration: none; color: var(--pn-on-code); font-weight: 600; } .code-b q { quotes: none; color: var(--pn-on-code-dim); }
+.code-b em { justify-self: start; font-style: normal; font-weight: 600; padding: 0 6px; border-radius: 5px; color: var(--pn-on-badge); background: var(--pn-badge); }
+.code-f { display: flex; align-items: center; gap: 8px; margin-top: auto; padding: 0 14px 12px; font-family: var(--sans); font-size: 12.5px; font-weight: 600; color: var(--pn-on-code); }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+.all { display: none; align-items: center; gap: 8px; height: 44px; padding: 0 10px; border-radius: 16px; font-size: 14.5px; font-weight: 600; text-decoration: none; color: var(--pn-ink); }
+.sheet-foot { display: none; }                               /* mobile only (section 11) */
+.foot-cta, .foot-sign { display: grid; place-items: center; height: 48px; border-radius: 999px; font-size: 15px; font-weight: 600; text-decoration: none; }
+.foot-cta { color: var(--mn-on-cta); background: var(--mn-cta); }
+.foot-sign { color: var(--pn-ink); background: var(--pn-foot-sign); box-shadow: var(--lens-rim); }
+.foot-cta:focus-visible, .foot-sign:focus-visible { outline: 2px solid var(--mn-focus); outline-offset: 2px; }
+.all svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---- 8. the lenses: clear, thick glass that follows the pointer. The middle is almost invisible; the rim is where
+        the glass shows. One rides the menu (.hl), one rides the links (.lens); app.js stretches them like a drop. ---- */
+.hl, .lens { position: absolute; left: 0; top: 0; width: 10px; height: 10px; border-radius: 999px; opacity: 0; pointer-events: none; overflow: hidden;
+  background: var(--lens-bg); box-shadow: var(--lens-rim); -webkit-backdrop-filter: var(--lens-filter); backdrop-filter: var(--lens-filter); }
+.hl { z-index: 2; }
+.lens { z-index: 9; border-radius: 16px; }
+.hl::before, .lens::before {                                  /* a thin bright arc along the top rim */
+  content: ''; position: absolute; inset: 1px 14% auto; height: 40%; border-radius: 999px 999px 40% 40% / 999px 999px 30% 30%;
+  border-top: 1px solid var(--w-70); background: linear-gradient(180deg, var(--w-9), transparent 70%); }
+.hl::after, .lens::after {                                    /* a small hot glint */
+  content: ''; position: absolute; top: 12%; right: 9%; width: 6%; height: 8%; min-width: 5px; min-height: 3px; border-radius: 999px; background: var(--w-70); }
+
+/* ---- 9. layout · DESKTOP (container ≥ 860 px): the capsule floats in the middle; the drop flows down under it ---- */
+@container site (min-width: 860px) {
+  .mn { --mode: full; }
+  .vp { --cap-h: 58px; }
+  .bar { width: max-content; margin: 14px auto 0; padding: 0 7px 0 20px; }
+  .brand { padding-right: 18px; }
+  .s-product { grid-template-columns: 276px 262px 196px; }
+  .s-solutions { grid-template-columns: 318px 172px; }
+  .s-developers { grid-template-columns: 262px 292px; }
+  .s-company { grid-template-columns: 280px; }
+  .feat { min-height: 100%; }
+}
+/* ---- 10. layout · TABLET (600–859 px): the capsule spans the top; the drop flows into a 2-column sheet ---- */
+@container site (min-width: 600px) and (max-width: 859px) {
+  .mn { --mode: bar; }
+  .vp { --cap-h: 56px; }
+  .bar { margin: 12px 12px 0; padding: 0 6px 0 18px; }
+  .nav { display: flex; justify-content: center; }
+  .tg { padding: 0 12px; font-size: 14.5px; }
+  .tg .chev { display: none; }
+  .sec-in { grid-template-columns: 1fr 1fr; width: var(--sheet-w, 560px); }
+  .s-solutions .art-rings { display: none; }
+  .s-company .col { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
+  .s-developers .col, .s-developers .code { grid-column: 1 / -1; }
+  .s-developers .col { grid-template-columns: 1fr 1fr; }
+  .s-developers .col-h { grid-column: 1 / -1; }
+  /* the featured card becomes a quiet glass row under the links */
+  .s-product .feat { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; padding: 12px 18px;
+    --pn-feat: var(--pn-ico); --pn-on-feat: var(--pn-ink); --pn-on-feat-dim: var(--pn-dim); --pn-chart: linear-gradient(180deg, var(--pn-ink), color-mix(in srgb, var(--pn-ink) 35%, transparent));
+    box-shadow: inset 0 0 0 1px var(--pn-ico-edge); }
+  .s-product .art-chart { order: 2; width: 132px; height: 40px; }
+}
+/* a narrow tablet: the CTA keeps only its arrow */
+@container site (min-width: 600px) and (max-width: 659px) {
+  .cta { width: 44px; padding: 0; justify-content: center; }
+  .cta span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* ---- 11. layout · MOBILE (< 600 px): the capsule spans the top; it swells into a glass sheet with an accordion ---- */
+@container site (max-width: 599px) {
+  .cta { height: 40px; padding: 0 16px; font-size: 14px; margin-left: auto; }
+  .cta svg { display: none; }
+  .burger { display: block; }
+  .sheet { position: absolute; left: 0; top: 0; z-index: 5; overflow: hidden; visibility: hidden; }   /* placed inside the drop by app.js, above its glass */
+  .sheet.is-on { visibility: visible; }
+  .sheet-in { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 4px 12px 0; overflow-y: auto; overscroll-behavior: contain; }   /* a short phone: the menu scrolls */
+  .sheet-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; position: sticky; bottom: 0; z-index: 5; margin-top: auto; padding: 16px 4px 26px;
+    background: linear-gradient(180deg, transparent, var(--pn-foot-fade) 32%); }
+  .sheet-foot::after { content: ''; position: absolute; left: 50%; bottom: 9px; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: var(--pn-grip); }   /* the grip: swipe up */
+  .mn.is-sheet .cta { opacity: 0; pointer-events: none; }
+  .tops { display: block; }
+  .it { border-bottom: 1px solid var(--pn-hr); }
+  .tg { display: flex; width: 100%; height: 52px; padding: 0 8px; justify-content: space-between; border-radius: 16px; font-size: 19px; font-weight: 600; color: var(--pn-ink); }
+  .tg .chev { width: 18px; height: 18px; }
+  .sec { position: relative; height: 0; overflow: hidden; visibility: hidden; z-index: auto; }
+  .sec-in { display: block; padding: 0 0 8px; }
+  .wide, .col-h, .feat, .code { display: none; }
+  .col { gap: 0; }
+  .lk { min-height: 48px; padding: 4px 8px; }
+  .all { display: flex; }
+}
+
+/* ---- 12. the impact: a bloom of light out of the caret and a ripple through the glass ---- */
+.fx { position: absolute; inset: 0; pointer-events: none; z-index: 20; visibility: hidden; }
+.fx-ring { position: absolute; left: -40px; top: -40px; width: 80px; height: 80px; border-radius: 50%; border: 1.5px solid var(--fx-ring); opacity: 0; }
+.fx-bloom { position: absolute; left: -120px; top: -120px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(closest-side, var(--fx-bloom), transparent); opacity: 0; }
+
+/* ---- 14. the looks' own touches ---- */
+/* metal: the word is chrome-white and heavier; the drop's reflections are brighter and sharper */
+[data-look="metal"] .w { font-family: var(--sans); font-style: normal; font-weight: 700; font-size: 74px; letter-spacing: -.055em; }
+[data-look="metal"] .g-spot { background: linear-gradient(100deg, transparent calc(var(--mx, 50%) - 110px), var(--pn-spot) var(--mx, 50%), transparent calc(var(--mx, 50%) + 110px)); mix-blend-mode: overlay; }
+[data-look="metal"] .g-sheen { width: 70%; background: linear-gradient(100deg, transparent 0%, var(--pn-sheen) 46%, var(--n-0) 50%, var(--pn-sheen) 54%, transparent 100%); mix-blend-mode: overlay; }
+[data-look="metal"] .brand .b1 { fill: var(--n-1000); }
+/* island: solid, no glass — no rim light, no spotlight, no lens glints; an upright word */
+[data-look="island"] .w { font-style: normal; font-size: 80px; letter-spacing: -.03em; }
+[data-look="island"] .g-spot, [data-look="island"] .g-rim,
+[data-look="island"] .hl::before, [data-look="island"] .hl::after, [data-look="island"] .lens::before, [data-look="island"] .lens::after { display: none; }
+[data-look="island"] .lights::before { display: none; }
+
+/* ---- 15. ?full=1: the bare component at the real viewport size ---- */
+[data-full] body { overflow: auto; }
+[data-full] .stage { display: block; height: auto; }
+[data-full] .frame { width: 100%; height: auto; transform: none; }
+[data-full] .frame > :not(.device), [data-full] .chrome, [data-full] .handle, [data-full] .amb { display: none; }
+[data-full] .device { position: static; width: auto; height: auto; }
+[data-full] .vp-clip { position: relative; top: 0; height: 100dvh; border-radius: 0; }
+[data-full] .vp { width: 100%; height: 100%; transform: none; }
+
+/* ---- 15b. ?wide=1: the same page in a 1280 × 720 landscape frame (16:9 videos). The title on the left, the giant
+        word in the middle, the tutorial pill and the credits on the right; the demo window takes the rest. ---- */
+[data-wide] .frame { width: 1280px; height: 720px; }
+[data-wide] .title { top: 34px; left: 56px; right: auto; text-align: left; }
+[data-wide] .series { justify-content: flex-start; }
+[data-wide] .word { top: 30px; left: 380px; right: 380px; }
+[data-wide] .bp { top: 160px; }
+[data-wide] .device { top: 196px; height: 508px; }
+[data-wide] .tutorial { left: auto; right: 56px; top: 40px; bottom: auto; transform: none; }
+[data-wide] .credits { left: auto; right: 56px; top: 104px; bottom: auto; width: 340px; }
+
+/* ---- 16. reduced motion: no morph, no sheen, no bloom; things fade (app.js snaps the geometry) ---- */
+@media (prefers-reduced-motion: reduce) {
+  .fx, .p-sheen { display: none; }
+  .tg .chev, .lk::after, .ico, .art-chart i { transition: none; }
+}

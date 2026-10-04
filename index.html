@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#050506">
+  <title>Liquid nav — UI Components 08</title>
+  <!-- before the first paint: the look (?look=glass|metal|island, or a|b|c), so the page never flashes the wrong one.
+       ?full=1 renders the bare component at the real viewport size (no 432 frame), for testing at 320…1920 px.
+       ?wide=1 lays the page out in a 1280 × 720 landscape frame, for 16:9 videos.
+       ?w=720 sets the demo window's width, ?open=product opens a section (stills and links). -->
+  <script>
+    (() => {
+      const html = document.documentElement, q = new URLSearchParams(location.search);
+      const look = { a: 'glass', b: 'metal', c: 'island' }[q.get('look')] || q.get('look');
+      html.dataset.look = ['glass', 'metal', 'island'].includes(look) ? look : 'glass';
+      if (q.get('full') === '1') html.dataset.full = '';
+      if (q.get('wide') === '1') html.dataset.wide = '';
+      // each look is its own post in the series: its number and its name in the title
+      const [num, name] = { glass: ['08', 'Liquid'], metal: ['09', 'Metal'], island: ['10', 'Island'] }[html.dataset.look];
+      document.title = `${name} nav — UI Components ${num}`;
+      addEventListener('DOMContentLoaded', () => {
+        document.querySelector('.series b').textContent = num;
+        document.querySelector('.title h1').firstChild.textContent = `${name} `;
+      });
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="stage">
+    <div class="frame">                                      <!-- the 9:16 composition, scaled to fit any screen (app.js) -->
+      <div class="amb" aria-hidden="true">                   <!-- ambient life per look, from the studio clock -->
+        <i class="glow g1"></i><i class="glow g2"></i><i class="glow g3"></i>
+      </div>
+
+      <header class="title">
+        <p class="series"><span>UI Components</span><b>08</b></p>
+        <h1>Liquid <em>nav</em></h1>
+        <p class="hint">Slide across. One panel. Every screen.</p>
+      </header>
+
+      <!-- the giant word: the section the panel shows, or the layout while you resize; it rolls the way you moved -->
+      <p class="word" aria-hidden="true"><span class="w wa">Explore</span><span class="w wb"></span></p>
+
+      <!-- the breakpoint read-out: which layout the nav is in, and the demo window's real CSS width -->
+      <div class="bp" aria-hidden="true">
+        <span class="bp-seg" data-m="compact">Mobile</span><span class="bp-seg" data-m="bar">Tablet</span><span class="bp-seg" data-m="full">Desktop</span>
+        <b class="bp-w"><span>880</span> px</b>
+      </div>
+
+      <!-- the demo window: its page renders at a REAL CSS width (so the container queries really fire) and is scaled to
+           fit. Drag the handle on its right edge to resize it, like a browser's responsive mode. -->
+      <div class="device">
+        <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="url">strata.example</span></div>
+        <div class="vp-clip">
+          <div class="vp" id="vp">
+
+            <!-- the light behind the glass: a beam and three soft glows that lean towards the open section -->
+            <div class="lights" aria-hidden="true"><i class="l1"></i><i class="l2"></i><i class="l3"></i></div>
+
+            <!-- the demo site behind the nav -->
+            <section class="site" aria-label="Demo page">
+              <p class="kick">Strata 4.0 is here</p>
+              <h2>Every metric, <span>one calm place.</span></h2>
+              <p class="lede">A demo site. Every link on it goes to <b>#</b>: nothing opens.</p>
+              <p class="acts"><a class="btn" href="#">Start free</a><a class="btn ghost" href="#">Book a demo</a></p>
+              <div class="cards" aria-hidden="true"><i></i><i></i><i></i></div>
+            </section>
+            <div class="vscrim" aria-hidden="true"></div>
+
+            <!-- ============================== THE COMPONENT ==============================
+                 A floating glass capsule. Desktop and tablet: four triggers in it, and the capsule itself flows down
+                 into the panel of the section you point at — one drop of glass that reshapes between the sections.
+                 Mobile: a burger; the capsule swells into a full-height sheet (a dialog) and the same sections become
+                 an accordion. One markup, one stylesheet, one script: the layout follows the CONTAINER's width. -->
+            <header class="mn" id="mn">
+              <div class="glass" aria-hidden="true"><i class="g-spot"></i><i class="g-sheen"></i><i class="g-rule"></i><i class="g-rim"></i></div>
+              <i class="hl" aria-hidden="true"></i>
+              <i class="lens" aria-hidden="true"></i>
+
+              <div class="bar">
+                <a class="brand" href="#" aria-label="Strata, home (demo: goes nowhere)">
+                  <svg viewBox="0 0 32 32" aria-hidden="true"><path class="b1" d="M4 22 16 6l12 16z"/><path class="b2" d="M9 26h14"/></svg><b>Strata</b>
+                </a>
+
+                <nav class="nav" aria-label="Main">
+                  <div class="sheet" id="mn-sheet">
+                    <div class="sheet-in">
+                      <ul class="tops">
+
+                        <li class="it" data-sec="product">
+                          <button class="tg" id="tg-product" type="button" aria-expanded="false" aria-controls="sec-product"><span>Product</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                          <div class="sec" id="sec-product" role="region" aria-labelledby="tg-product">
+                            <div class="sec-in s-product">
+                              <div class="col">
+                                <p class="col-h">Platform</p>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="lt"><b>Analytics</b><small>Every metric, live</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></span><span class="lt"><b>Automations</b><small>Workflows on autopilot</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M9 3v5M15 3v5M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/></svg></span><span class="lt"><b>Integrations</b><small>Connect 120+ tools</small></span></a>
+                              </div>
+                              <div class="col wide">
+                                <p class="col-h">Build</p>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z"/></svg></span><span class="lt"><b>Dashboards</b><small>Drag, drop, share</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zM14 2v6h6M9 13h8M9 17h5"/></svg></span><span class="lt"><b>Reports</b><small>Sent to your inbox</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5zM9 12l2 2 4-4"/></svg></span><span class="lt"><b>Security</b><small>SSO, audit logs, SOC 2</small></span></a>
+                              </div>
+                              <a class="feat wide" href="#">
+                                <span class="art art-chart" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                                <span class="ft"><em>New</em><b>Live charts</b><small>Ships in Strata 4</small></span>
+                              </a>
+                              <a class="all" href="#">See all of Product <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+                            </div>
+                          </div>
+                        </li>
+
+                        <li class="it" data-sec="solutions">
+                          <button class="tg" id="tg-solutions" type="button" aria-expanded="false" aria-controls="sec-solutions"><span>Solutions</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                          <div class="sec" id="sec-solutions" role="region" aria-labelledby="tg-solutions">
+                            <div class="sec-in s-solutions">
+                              <div class="col">
+                                <p class="col-h">By team</p>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 11l15-6v14L3 13zM7 13l1.5 6h3L10 13.5"/></svg></span><span class="lt"><b>Marketing</b><small>Every campaign, measured</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span><span class="lt"><b>Sales</b><small>The pipeline at a glance</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0v5h-4v-6h4M4 13v5h4v-6H4"/></svg></span><span class="lt"><b>Support</b><small>Answers before the ticket</small></span></a>
+                              </div>
+                              <div class="col wide">
+                                <p class="col-h">By size</p>
+                                <a class="tag" href="#"><i class="dot d1"></i>Startups</a>
+                                <a class="tag" href="#"><i class="dot d2"></i>Scale-ups</a>
+                                <a class="tag" href="#"><i class="dot d3"></i>Enterprise</a>
+                                <span class="art art-rings" aria-hidden="true"><i></i><i></i><i></i></span>
+                              </div>
+                              <a class="all" href="#">See all Solutions <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+                            </div>
+                          </div>
+                        </li>
+
+                        <li class="it" data-sec="developers">
+                          <button class="tg" id="tg-developers" type="button" aria-expanded="false" aria-controls="sec-developers"><span>Developers</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                          <div class="sec" id="sec-developers" role="region" aria-labelledby="tg-developers">
+                            <div class="sec-in s-developers">
+                              <div class="col">
+                                <p class="col-h">Build with Strata</p>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-3a3 3 0 0 0-3 3"/></svg></span><span class="lt"><b>Docs</b><small>Guides and recipes</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span><span class="lt"><b>API reference</b><small>REST and webhooks</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 7v5l3 2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/></svg></span><span class="lt"><b>Changelog</b><small>What shipped this week</small></span></a>
+                              </div>
+                              <a class="code wide" href="#" aria-label="Quick start: one request (demo)">
+                                <span class="code-h" aria-hidden="true"><i></i><i></i><i></i><span>quickstart.sh</span></span>
+                                <span class="code-b" aria-hidden="true"><span><u>$</u> curl <s>api.strata.example</s>/v1/events</span><span>&nbsp; -H <q>"Authorization: …"</q></span><span><em>200</em> OK · 38 ms</span></span>
+                                <span class="code-f"><i class="live-dot" aria-hidden="true"></i>All systems normal</span>
+                              </a>
+                              <a class="all" href="#">See all for Developers <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+                            </div>
+                          </div>
+                        </li>
+
+                        <li class="it" data-sec="company">
+                          <button class="tg" id="tg-company" type="button" aria-expanded="false" aria-controls="sec-company"><span>Company</span><svg class="chev" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>
+                          <div class="sec" id="sec-company" role="region" aria-labelledby="tg-company">
+                            <div class="sec-in s-company">
+                              <div class="col">
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18zM12 11v6M12 7.5v.5"/></svg></span><span class="lt"><b>About</b><small>Why we build Strata</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></span><span class="lt"><b>Customers</b><small>Stories from 4,000 teams</small></span></a>
+                                <a class="lk" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 8h18v12H3zM8 8V5h8v3M3 13h18"/></svg></span><span class="lt"><b>Careers <em class="badge">Hiring</em></b><small>Remote, in 14 countries</small></span></a>
+                                <a class="lk wide" href="#"><span class="ico"><svg viewBox="0 0 24 24"><path d="M4 5h13v14H6a2 2 0 0 1-2-2zM17 9h3v8a2 2 0 0 1-2 2M8 9h5M8 13h5"/></svg></span><span class="lt"><b>Press</b><small>News and brand kit</small></span></a>
+                              </div>
+                              <a class="all" href="#">See all of Company <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></a>
+                            </div>
+                          </div>
+                        </li>
+
+                      </ul>
+                      <!-- mobile only: the actions at the foot of the sheet (it stays put while the menu scrolls) -->
+                      <div class="sheet-foot">
+                        <a class="foot-cta" href="#">Get started</a>
+                        <a class="foot-sign" href="#">Sign in</a>
+                      </div>
+                    </div>
+                  </div>
+                </nav>
+
+                <a class="cta" href="#"><span>Get started</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                <button class="burger" type="button" aria-expanded="false" aria-controls="mn-sheet" aria-label="Open menu"><i></i><i></i><i></i></button>
+              </div>
+            </header>
+
+            <!-- the opening impact: a bloom of light and a ripple through the glass -->
+            <div class="fx" aria-hidden="true"><i class="fx-bloom"></i><i class="fx-ring"></i><i class="fx-ring"></i></div>
+          </div>
+        </div>
+        <button class="handle" type="button" role="slider" aria-label="Demo window width" aria-valuemin="360" aria-valuemax="1040" aria-valuenow="880" aria-valuetext="880 pixels, desktop layout"><i aria-hidden="true"></i></button>
+      </div>
+
+      <p class="sr-only live" role="status" aria-live="polite" aria-atomic="true"></p>
+    </div>
+  </main>
+  <div class="touch" aria-hidden="true"></div>
+
+  <script src="spring.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
